@@ -124,10 +124,14 @@ func checkJSONFlags(cmd *cobra.Command) (*jsonExporter, error) {
 	jqFlag := f.Lookup("jq")
 	tplFlag := f.Lookup("template")
 	webFlag := f.Lookup("web")
+	commentsFlag := f.Lookup("comments")
 
 	if jsonFlag.Changed {
 		if webFlag != nil && webFlag.Changed {
 			return nil, errors.New("cannot use `--web` with `--json`")
+		}
+		if commentsFlag != nil && commentsFlag.Changed && commentsFlag.Value.Type() == "bool" {
+			return nil, errors.New("cannot use `--comments` with `--json`")
 		}
 		jv := jsonFlag.Value.(pflag.SliceValue)
 		return &jsonExporter{

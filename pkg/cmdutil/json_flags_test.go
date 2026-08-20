@@ -16,11 +16,12 @@ import (
 
 func TestAddJSONFlags(t *testing.T) {
 	tests := []struct {
-		name        string
-		fields      []string
-		args        []string
-		wantsExport *jsonExporter
-		wantsError  string
+		name               string
+		fields             []string
+		args               []string
+		wantsExport        *jsonExporter
+		wantsError         string
+		stringCommentsFlag bool
 	}{
 		{
 			name:        "no JSON flag",
@@ -48,6 +49,20 @@ func TestAddJSONFlags(t *testing.T) {
 			args:        []string{"--json", "id", "--web"},
 			wantsExport: nil,
 			wantsError:  "cannot use `--web` with `--json`",
+		},
+		{
+			name:        "cannot combine --json with --comments",
+			fields:      []string{"id", "number", "title"},
+			args:        []string{"--json", "id", "--comments"},
+			wantsExport: nil,
+			wantsError:  "cannot use `--comments` with `--json`",
+		},
+		{
+			name:               "can combine --json with string comments flag",
+			fields:             []string{"id", "number", "title"},
+			args:               []string{"--json", "id", "--comments", "5"},
+			wantsExport:        &jsonExporter{fields: []string{"id"}},
+			stringCommentsFlag: true,
 		},
 		{
 			name:        "cannot use --jq without --json",
@@ -98,6 +113,11 @@ func TestAddJSONFlags(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := &cobra.Command{Run: func(*cobra.Command, []string) {}}
 			cmd.Flags().Bool("web", false, "")
+			if tt.stringCommentsFlag {
+				cmd.Flags().String("comments", "", "")
+			} else {
+				cmd.Flags().Bool("comments", false, "")
+			}
 			var exporter Exporter
 			AddJSONFlags(cmd, &exporter, tt.fields)
 			cmd.SetArgs(tt.args)
