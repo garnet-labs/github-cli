@@ -1,0 +1,39 @@
+name: Garnet Dependency Replay
+
+on:
+  push:
+    branches: ['rb/**']
+  pull_request:
+    paths:
+      - 'go.mod'
+      - 'go.sum'
+      - '.github/workflows/garnet-dependency-replay.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: garnet-dependency-replay-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  go-modules:
+    name: Go module download (recorded)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Garnet Runtime Visibility
+        uses: garnet-org/action@v2
+        with:
+          api_token: ${{ secrets.GARNET_API_TOKEN }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Download the locked module graph
+        run: go mod download
+      - name: Exercise the changed test dependency
+        run: go test ./internal/ghinstance/... ./internal/set/... ./internal/text/... || true
+      - name: Hold capture window for delayed children
+        run: sleep 45
