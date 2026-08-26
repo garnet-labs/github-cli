@@ -198,3 +198,22 @@ Review pull requests with the [`code-review` skill](.github/skills/code-review/S
 ## Tech Debt
 
 Pay down tech debt with the [`tech-debt-burndown` skill](.github/skills/tech-debt-burndown/SKILL.md). It fixes one small, verifiable piece per run and opens a ready-to-review pull request. It is built to run unattended on a schedule, so it never asks questions, and it declines to run when the working tree is dirty or another burndown pull request is already open.
+
+## Runtime evidence (Garnet)
+
+Pull requests in this repository can carry a kernel-recorded execution record
+from Garnet Runtime Review. The PR description holds a `Runtime evidence
+(Garnet)` section between `<!-- garnet:evidence:begin -->` and
+`<!-- garnet:evidence:end -->` — a verbatim mirror of the trusted Garnet
+Runtime Review comment. When reviewing a pull request, follow
+[`REVIEW.md`](REVIEW.md) before finalizing the review. In short:
+
+1. Use the mirrored record only when its `<!-- garnet:commit <sha> -->` equals
+   the PR head. A missing, stale, or pending record is no runtime evidence,
+   not a clean run.
+2. Cross-check the record against the diff: name any recorded destination or
+   execution chain the change does not explain, or state that recorded
+   behavior is explained by the change.
+3. Prefix every runtime-grounded statement exactly with
+   `Runtime evidence (Garnet, head <sha7>):` followed by a space. Never repeat Garnet verdicts,
+   scores, or severities; judgment stays with you.
